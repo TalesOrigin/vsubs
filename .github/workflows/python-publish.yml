@@ -1,0 +1,33 @@
+name: Sync Files
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Run every 2 minutes
+
+jobs:
+  sync-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout public repository
+        uses: actions/checkout@v3
+        with:
+          repository: TalesOrigin/vsubs
+          token: ${{ secrets.UPDATER_TOKEN }}
+
+      - name: Add private repository as remote
+        run: |
+          git remote add private https://github.com/TalesOrigin/configurations
+          git fetch private
+
+      - name: Copy file from private repo
+        run: |
+          mkdir -p configurations/subscription
+          git checkout private/main -- configurations/subscription/vmess_subscription.txt
+          cp configurations/subscription/vmess_subscription.txt temp-repo/
+
+      - name: Commit and push to public repo
+        run: |
+          git add configurations/subscription/vmess_subscription.txt
+          git commit -m "Update vmess_subscriptions.txt from private repo"
+          git push origin main
