@@ -1,0 +1,35 @@
+name: Sync File from Private Repo
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Runs every 2 minutes
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Public Repository
+      uses: actions/checkout@v3
+      
+    - name: Set up Git
+      run: |
+        git config --global user.name 'TalefgsOrigsdfin'
+        git config --global user.email 'nfsguhamsfidu@gmail.com'
+    
+    - name: Checkout Private Repository
+      uses: actions/checkout@v3
+      with:
+        repository: TalesOrigin/configurations
+        token: ${{ secrets.Workflow_Access_Token }}
+        path: private-repo
+
+    - name: Copy File from Private Repo
+      run: |
+        cp private-repo/configurations/subscription/vmess_subscription.txt ./
+
+    - name: Commit and Push Changes
+      run: |
+        git add vmess_subscription.txt
+        git commit -m "Update vmess_subscription.txt from private repo"
+        git push origin main
